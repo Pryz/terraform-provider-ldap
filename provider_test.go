@@ -32,7 +32,7 @@ func testAccPreCheck(t *testing.T) {
   if v := os.Getenv("LDAP_HOST"); v == "" {
     t.Fatal("LDAP_HOST must be set for acceptance tests")
   }
-  if v := os.Getenv("LDAP_PORT"); v == "" {
+	if v := os.Getenv("LDAP_PORT"); v == "" {
     t.Fatal("LDAP_PORT must be set for acceptance tests")
   }
   if v := os.Getenv("LDAP_BIND_USER"); v == "" {

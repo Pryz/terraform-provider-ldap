@@ -1,15 +1,17 @@
 package ldap
 
 import (
+	"crypto/tls"
 	"fmt"
+
 	"gopkg.in/ldap.v2"
 )
 
 type Config struct {
-	LdapHost		 string
-	LdapPort		 int
-	UseTLS			 bool
-	BindUser		 string
+	LdapHost     string
+	LdapPort     int
+	UseTLS       bool
+	BindUser     string
 	BindPassword string
 }
 

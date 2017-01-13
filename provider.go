@@ -16,13 +16,13 @@ func Provider() terraform.ResourceProvider {
 			},
 			"ldap_port": &schema.Schema{
 				Type: schema.TypeInt,
-				Required: false,
+				Optional: true,
 				DefaultFunc: schema.EnvDefaultFunc("LDAP_PORT", 389),
 				Description: descriptions["ldap_port"],
 			},
 			"use_tls": &schema.Schema{
 				Type: schema.TypeBool,
-				Required: false,
+				Optional: true,
 				DefaultFunc: schema.EnvDefaultFunc("LDAP_USE_TLS", true),
 				Description: descriptions["ldap_port"],
 			},
@@ -40,12 +40,14 @@ func Provider() terraform.ResourceProvider {
 			},
 		},
 
-		ResourceMap: map[string]*schema.Resource{
+		//ResourcesMap: map[string]*schema.Resource{ },
+		ResourcesMap: nil,
 
-		},
 		ConfigureFunc: configureProvider,
 	}
 }
+
+var descriptions map[string]string
 
 func init() {
 	descriptions = map[string]string{
@@ -62,6 +64,7 @@ func init() {
 }
 
 func configureProvider(d *schema.ResourceData) (interface{}, error) {
+	//var conn ldap.Conn
 	config := Config{
 		LdapHost: d.Get("ldap_host").(string),
 		LdapPort: d.Get("ldap_port").(int),
@@ -70,7 +73,9 @@ func configureProvider(d *schema.ResourceData) (interface{}, error) {
 		BindPassword: d.Get("bind_password").(string),
 	}
 
-	if conn, err := config.initiateAndBind(); err != nil {
+	conn, err := config.initiateAndBind()
+	//if conn, err = config.initiateAndBind(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
