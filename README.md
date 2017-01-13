@@ -1,5 +1,7 @@
 # [WIP] Terraform LDAP
 
+NOT WORKING YET. Come back in few days :)
+
 ## Provider example
 
 ```
