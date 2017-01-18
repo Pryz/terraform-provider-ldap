@@ -15,7 +15,7 @@ func resourceLdapObject() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceLdapObjectCreate,
 		Read:   resourceLdapObjectRead,
-		Update: resourceLdapObjectUpdate,
+		//Update: resourceLdapObjectUpdate,
 		Delete: resourceLdapObjectDelete,
 		Exists: resourceLdapObjectExists,
 
@@ -23,28 +23,34 @@ func resourceLdapObject() *schema.Resource {
 			"dn": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"base_dn": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"object_classes": &schema.Schema{
 				Type:     schema.TypeList,
 				Required: true,
+				ForceNew: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"attribute": &schema.Schema{
 				Type:     schema.TypeSet,
 				Optional: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": &schema.Schema{
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 						},
 						"value": &schema.Schema{
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 						},
 					},
 				},
@@ -165,10 +171,16 @@ func resourceLdapObjectRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceLdapObjectUpdate(d *schema.ResourceData, meta interface{}) error {
-	return nil
-}
-
 func resourceLdapObjectDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*ldap.Conn)
+	dn := d.Get("dn").(string)
+	base_dn := d.Get("base_dn").(string)
+
+	delRequest := ldap.NewDelRequest(fmt.Sprintf("%s,%s", dn, base_dn), nil)
+
+	err := conn.Del(delRequest)
+	if err != nil {
+		return err
+	}
 	return nil
 }
