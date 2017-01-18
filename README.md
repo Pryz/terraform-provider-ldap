@@ -30,6 +30,46 @@ provider "ldap" {
 }
 ```
 
+## Resource LDAP Object example
+
+```
+resource "ldap_object" "foo" {
+  dn = "uid=foo"
+  base_dn = "dc=example,dc=com"
+
+  object_classes = [
+    "inetOrgPerson",
+    "posixAccount",
+  ]
+
+  attribute {
+    name = "sn"
+    value = "10"
+  }
+  attribute {
+    name = "cn"
+    value = "bar"
+  }
+  attribute {
+    name = "uidNumber"
+    value = "1234"
+  }
+  attribute {
+    name = "gidNumber"
+    value = "1234"
+  }
+  attribute {
+    name = "homeDirectory"
+    value = "/home/billy"
+  }
+  attribute {
+    name = "loginShell"
+    value = "/bin/bash"
+  }
+
+}
+```
+
 Of course the Bind User will need write access.
 
 ## Limitations
