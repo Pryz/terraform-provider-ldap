@@ -1,0 +1,12 @@
+version: '2'
+services:
+  openldap:
+    environment:
+      LDAP_ORGANISATION: "Example Inc"
+      LDAP_DOMAIN: "example.com"
+      LDAP_ADMIN_PASSWORD: "admin"
+      LDAP_CONFIG_PASSWORD: "config"
+    image: osixia/openldap
+    ports:
+      - "389:389"
+      - "636:636"
