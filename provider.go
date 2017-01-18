@@ -1,4 +1,4 @@
-package ldap
+package main
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
@@ -9,39 +9,40 @@ func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"ldap_host": &schema.Schema{
-				Type: schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("LDAP_HOST", nil),
 				Description: descriptions["ldap_host"],
 			},
 			"ldap_port": &schema.Schema{
-				Type: schema.TypeInt,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("LDAP_PORT", 389),
 				Description: descriptions["ldap_port"],
 			},
 			"use_tls": &schema.Schema{
-				Type: schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("LDAP_USE_TLS", true),
 				Description: descriptions["ldap_port"],
 			},
 			"bind_user": &schema.Schema{
-				Type: schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("LDAP_BIND_USER", nil),
 				Description: descriptions["bind_user"],
 			},
 			"bind_password": &schema.Schema{
-				Type: schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("LDAP_BIND_PASSWORD", nil),
 				Description: descriptions["bind_password"],
 			},
 		},
 
-		//ResourcesMap: map[string]*schema.Resource{ },
-		ResourcesMap: nil,
+		ResourcesMap: map[string]*schema.Resource{
+			"ldap_object": resourceLdapObject(),
+		},
 
 		ConfigureFunc: configureProvider,
 	}
@@ -64,17 +65,15 @@ func init() {
 }
 
 func configureProvider(d *schema.ResourceData) (interface{}, error) {
-	//var conn ldap.Conn
 	config := Config{
-		LdapHost: d.Get("ldap_host").(string),
-		LdapPort: d.Get("ldap_port").(int),
-		UseTLS: d.Get("use_tls").(bool),
-		BindUser: d.Get("bind_user").(string),
+		LdapHost:     d.Get("ldap_host").(string),
+		LdapPort:     d.Get("ldap_port").(int),
+		UseTLS:       d.Get("use_tls").(bool),
+		BindUser:     d.Get("bind_user").(string),
 		BindPassword: d.Get("bind_password").(string),
 	}
 
 	conn, err := config.initiateAndBind()
-	//if conn, err = config.initiateAndBind(); err != nil {
 	if err != nil {
 		return nil, err
 	}

@@ -1,4 +1,4 @@
-package ldap
+package main
 
 import (
 	"crypto/tls"
