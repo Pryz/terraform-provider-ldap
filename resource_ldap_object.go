@@ -3,7 +3,9 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"math/rand"
+	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"gopkg.in/ldap.v2"
@@ -117,7 +119,7 @@ func resourceLdapObjectRead(d *schema.ResourceData, meta interface{}) error {
 		base_dn,
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
 		fmt.Sprintf("(%s)", dn),
-		nil,
+		[]string{"*"},
 		nil,
 	)
 
@@ -133,6 +135,33 @@ func resourceLdapObjectRead(d *schema.ResourceData, meta interface{}) error {
 		err = errors.New("More than one record found for " + dn)
 		return err
 	}
+
+	objectClasses := sr.Entries[0].GetAttributeValues("objectClass")
+	d.Set("object_classes", objectClasses)
+
+	defaultAttr := strings.Split(dn, "=")[0]
+
+	attrMap := make(map[string]map[string]interface{})
+	for _, attr := range sr.Entries[0].Attributes {
+		if attr.Name == "objectClass" || attr.Name == defaultAttr {
+			continue
+		}
+		k := fmt.Sprintf("%s-%s", attr.Name, attr.Values[0])
+		m := make(map[string]interface{})
+		m["name"] = attr.Name
+		m["value"] = attr.Values[0]
+		attrMap[k] = m
+	}
+
+	attributes := make([]map[string]interface{}, 0, len(attrMap))
+	for _, m := range attrMap {
+		attributes = append(attributes, m)
+	}
+
+	if err := d.Set("attribute", attributes); err != nil {
+		log.Printf("[WARN] Error setting LDAP attributes for (%s)", d.Id(), err)
+	}
+
 	return nil
 }
 
