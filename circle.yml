@@ -5,6 +5,6 @@ dependencies:
 
 test:
   pre:
-    - go vet ./..
+    - go vet ./...
   override:
     - make test
