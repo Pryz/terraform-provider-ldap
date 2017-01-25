@@ -1,0 +1,8 @@
+dependencies:
+  override:
+    - sudo curl -L# https://releases.hashicorp.com/terraform/0.8.4/terraform_0.8.4_linux_amd64.zip -o /usr/local/bin/tf.zip
+    - cd /usr/local/bin && sudo unzip tf.zip
+
+test:
+  override:
+    - make test
