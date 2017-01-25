@@ -1,7 +1,6 @@
 dependencies:
   pre:
-    - go get github.com/hashicorp/terraform
-    - go get gopkg.in/ldap.v2
+    - go get -d -u ./...
 
 test:
   pre:
