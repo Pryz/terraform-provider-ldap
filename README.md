@@ -1,4 +1,4 @@
-# [WIP] Terraform LDAP
+# Terraform LDAP [![CircleCI](https://circleci.com/gh/Pryz/terraform-provider-ldap.svg?style=svg)](https://circleci.com/gh/Pryz/terraform-provider-ldap)
 
 ## Installation
 
