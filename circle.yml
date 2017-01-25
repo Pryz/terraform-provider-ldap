@@ -1,8 +1,10 @@
 dependencies:
-  override:
-    - sudo curl -L# https://releases.hashicorp.com/terraform/0.8.4/terraform_0.8.4_linux_amd64.zip -o /usr/local/bin/tf.zip
-    - cd /usr/local/bin && sudo unzip tf.zip
+  pre:
+    - go get github.com/hashicorp/terraform
+    - go get gopkg.in/ldap.v2
 
 test:
+  pre:
+    - go vet ./..
   override:
     - make test
