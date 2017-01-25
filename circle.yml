@@ -1,5 +1,5 @@
 dependencies:
-  pre:
+  override:
     - go get -d -u github.com/hashicorp/terraform
     - go get -d -u gopkg.in/ldap.v2
 
