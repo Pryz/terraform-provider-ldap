@@ -165,7 +165,7 @@ func resourceLdapObjectRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if err := d.Set("attribute", attributes); err != nil {
-		log.Printf("[WARN] Error setting LDAP attributes for (%s)", d.Id(), err)
+		log.Printf("[WARN] Error setting LDAP attributes for (%s) : %s", d.Id(), err)
 	}
 
 	return nil
