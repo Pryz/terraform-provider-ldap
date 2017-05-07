@@ -52,9 +52,9 @@ var descriptions map[string]string
 
 func init() {
 	descriptions = map[string]string{
-		"ldap_host": "The LDAP host to initiate the conneciton.",
+		"ldap_host": "The LDAP host to initiate the connection.",
 
-		"ldap_port": "The LDAP port to initiate the conneciton. Default : 389.",
+		"ldap_port": "The LDAP port to initiate the connection. Default: 389.",
 
 		"use_tls": "Use TLS to secure the connection. Default: true.",
 
