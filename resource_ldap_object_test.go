@@ -40,8 +40,8 @@ func testAccCheckLdapObjectDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*ldap.Conn)
 	for _, r := range s.RootModule().Resources {
 		dn := r.Primary.Attributes["dn"]
-		base_dn := r.Primary.Attributes["base_dn"]
-		sr, err := helperSearchRequest(dn, base_dn, conn)
+		baseDN := r.Primary.Attributes["base_dn"]
+		sr, err := helperSearchRequest(dn, baseDN, conn)
 		if err != nil {
 			return err
 		}
@@ -58,8 +58,8 @@ func testAccCheckLdapObjectExists(n string) resource.TestCheckFunc {
 		conn := testAccProvider.Meta().(*ldap.Conn)
 		for _, r := range s.RootModule().Resources {
 			dn := r.Primary.Attributes["dn"]
-			base_dn := r.Primary.Attributes["base_dn"]
-			sr, err := helperSearchRequest(dn, base_dn, conn)
+			baseDn := r.Primary.Attributes["base_dn"]
+			sr, err := helperSearchRequest(dn, baseDn, conn)
 			if err != nil {
 				return err
 			}
@@ -86,17 +86,14 @@ func testAccCheckLdapObjectAttributes(n string) resource.TestCheckFunc {
 
 const testAccCheckLdapObjectConfig = `
 resource "ldap_object" "foo" {
-  dn = "uid=foo"
-  base_dn = "dc=example,dc=com"
-
+  dn = "uid=foo,dc=example,dc=com"
   object_classes = [
     "inetOrgPerson",
     "posixAccount",
   ]
 
-  attribute {
-    name = "sn"
-    value = "10"
+  attributes = [
+		{ sn = "10"
   }
   attribute {
     name = "cn"
@@ -122,13 +119,7 @@ resource "ldap_object" "foo" {
 }
 `
 
-func helperSearchRequest(dn string, base_dn string, conn *ldap.Conn) (*ldap.SearchResult, error) {
-	searchRequest := ldap.NewSearchRequest(
-		base_dn,
-		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
-		fmt.Sprintf("(%s)", dn),
-		[]string{"*"},
-		nil,
-	)
+func helperSearchRequest(dn string, baseDn string, conn *ldap.Conn) (*ldap.SearchResult, error) {
+	searchRequest := ldap.NewSearchRequest(baseDn, ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false, fmt.Sprintf("(%s)", dn), []string{"*"}, nil)
 	return conn.Search(searchRequest)
 }

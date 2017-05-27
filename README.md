@@ -1,4 +1,6 @@
-# Terraform LDAP [![CircleCI](https://circleci.com/gh/Pryz/terraform-provider-ldap.svg?style=svg)](https://circleci.com/gh/Pryz/terraform-provider-ldap)
+# Terraform LDAP 
+
+[![CircleCI](https://circleci.com/gh/Pryz/terraform-provider-ldap.svg?style=svg)](https://circleci.com/gh/Pryz/terraform-provider-ldap)
 
 ## Installation
 
@@ -13,7 +15,7 @@ Then add the plugin to your local `.terraformrc` :
 ```
 cat >> ~/.terraformrc <<EOF
 providers {
-  ldap = "${GOPATH}/bin/terraform-provider-ldap"
+    ldap = "${GOPATH}/bin/terraform-provider-ldap"
 }
 EOF
 ```
@@ -22,11 +24,11 @@ EOF
 
 ```
 provider "ldap" {
-  ldap_host = "ldap.mydomain.com"
-  ldap_port = 689
-  use_tls = true
-  bind_user = "foo"
-  bind_password = "bar"
+    ldap_host = "ldap.example.org"
+    ldap_port = 389
+    use_tls = true
+    bind_user = "cn=admin,dc=example,dc=com"
+    bind_password = "admin"
 }
 ```
 
@@ -34,45 +36,42 @@ provider "ldap" {
 
 ```
 resource "ldap_object" "foo" {
-  dn = "uid=foo"
-  base_dn = "dc=example,dc=com"
+    # DN must be complete (no RDN!)
+    dn = "uid=foo,dc=example,dc=com"
 
-  object_classes = [
-    "inetOrgPerson",
-    "posixAccount",
-  ]
+    # classes are specified as an array
+    object_classes = [
+        "inetOrgPerson",
+        "posixAccount",
+    ]
 
-  attribute {
-    name = "sn"
-    value = "10"
-  }
-  attribute {
-    name = "cn"
-    value = "bar"
-  }
-  attribute {
-    name = "uidNumber"
-    value = "1234"
-  }
-  attribute {
-    name = "gidNumber"
-    value = "1234"
-  }
-  attribute {
-    name = "homeDirectory"
-    value = "/home/billy"
-  }
-  attribute {
-    name = "loginShell"
-    value = "/bin/bash"
-  }
-
+    # attributes are sepcified as a set of 1-element maps
+    attributes = [
+        { sn              = "10" },
+        { cn              = "bar" },
+        { uidNumber       = "1234" },
+        { gidNumber       = "1234" },
+        { homeDirectory   = "/home/billy" },
+        { loginShell      = "/bin/bash" },
+        # when an attribute has multiple values, it must be specified multiple times
+        { mail            = "billy@example.com" },
+        { mail            = "admin@example.com" },
+    ]
 }
 ```
 
-Of course the Bind User will need write access.
+The Bind User must have write access for resource creation to succeed.
+
+## Features
+
+This provider is feature complete; it supports resource creation, reading, update 
+and deletion; it can be used to create nested resources at all levels of the
+hierarchy, provided the proper (implicit or explicit) dependencies are declared.
+When it comes to updating an object, the plugin will calculate the set of 
+attributes that need to be added, modified and removed and will surgically 
+operate on the remote object.
 
 ## Limitations
 
-Currently this provider doesn't handle updates. To change records it will delete and create a new one.
-I don't see any problem by doing that for the moment. If you do feel free to create me an Issue.
+This provider supports TLS, but certificate verification is not enabled yet; all
+connections are through TCP, no UDP support yet.
