@@ -20,6 +20,10 @@ func resourceLDAPObject() *schema.Resource {
 		Delete: resourceLDAPObjectDelete,
 		Exists: resourceLDAPObjectExists,
 
+		Importer: &schema.ResourceImporter{
+			State: resourceLDAPObjectImport,
+		},
+
 		Schema: map[string]*schema.Schema{
 			"dn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -54,6 +58,12 @@ func resourceLDAPObject() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceLDAPObjectImport(d *schema.ResourceData, meta interface{}) (imported []*schema.ResourceData, err error) {
+	err = resourceLDAPObjectRead(d, meta)
+	imported = append(imported, d)
+	return
 }
 
 func resourceLDAPObjectExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
