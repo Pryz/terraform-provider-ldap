@@ -2,8 +2,8 @@ package main
 
 import "testing"
 
-func setup() (*set, *set) {
-	s1 := &set{
+func setup() (*Set, *Set) {
+	s1 := &Set{
 		data: map[string]struct{}{},
 	}
 	s1.Add("a")
@@ -27,7 +27,7 @@ func setup() (*set, *set) {
 }
 
 func TestAdd(t *testing.T) {
-	s1 := &set{
+	s1 := &Set{
 		data: map[string]struct{}{},
 	}
 	if !s1.Add("a") {

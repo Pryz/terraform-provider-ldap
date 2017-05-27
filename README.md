@@ -45,7 +45,7 @@ resource "ldap_object" "foo" {
         "posixAccount",
     ]
 
-    # attributes are sepcified as a set of 1-element maps
+    # attributes are specified as a set of 1-element maps
     attributes = [
         { sn              = "10" },
         { cn              = "bar" },

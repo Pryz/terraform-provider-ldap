@@ -90,19 +90,6 @@ func resourceLDAPObjectExists(d *schema.ResourceData, meta interface{}) (b bool,
 		return false, err
 	}
 
-	/*
-		// the following checks should not be needed
-		if len(sr.Entries) == 0 {
-			log.Printf("[DEBUG] ldap_object::exists - no results for %q", dn)
-			return false, nil
-		} else if len(sr.Entries) > 1 {
-			// this cannot be: we're searching by primary key!
-			log.Printf("[ERROR] ldap_object::exists - more than one result found for %q (?!?!)", dn)
-			err = errors.New("More than one record found for " + dn)
-			return false, err
-		}
-	*/
-
 	log.Printf("[DEBUG] ldap_object::exists - object %q exists", dn)
 	return true, nil
 }
@@ -140,20 +127,6 @@ func resourceLDAPObjectCreate(d *schema.ResourceData, meta interface{}) error {
 				for name, value := range attribute.(map[string]interface{}) {
 					log.Printf("[DEBUG] ldap_object::create - %q has attribute[%v] => %v (%T)", dn, name, value, value)
 					m[name] = append(m[name], value.(string))
-					/*
-						switch value := value.(type) {
-						default:
-							log.Printf("[ERROR] unexpected type %T for attribute %s", value, name)
-						case string:
-							log.Printf("[DEBUG] attribute %q has string value %q", name, value)
-							m[name] = append(m[name], value)
-						case []string:
-							// each value should only be a string, if there is a []string
-							// we have a bug, but let's play it safe anyway...
-							log.Printf("[WARN] attribute %q has []string value %v", name, value)
-							m[name] = append(m[name], value...)
-						}
-					*/
 				}
 			}
 			// now loop through the map and add attributes with theys value(s)
@@ -210,20 +183,6 @@ func resourceLDAPObjectRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	log.Printf("[DEBUG] ldap_object::read - query for %q returned %v", dn, sr)
-
-	/*
-		// these checks should not be necessary
-		if len(sr.Entries) == 0 {
-			// we should never get here!
-			log.Printf("[WARN] ldap_object::read - removing object %q from state because it no longer exists in LDAP", dn)
-			d.SetId("")
-			return nil
-		} else if len(sr.Entries) > 1 {
-			// nor should we ever see this: we're searching by primary key
-			err = errors.New("More than one record found for " + dn)
-			return err
-		}
-	*/
 
 	d.SetId(dn)
 	d.Set("object_classes", sr.Entries[0].GetAttributeValues("objectClass"))
@@ -351,7 +310,6 @@ func attributeHash(v interface{}) int {
 	buffer.WriteRune('}')
 	text := buffer.String()
 	hash := hashcode.String(text)
-	//log.Printf("[DEBUG] ldap_object::diff - hash of %q: %d", text, hash)
 	return hash
 }
 

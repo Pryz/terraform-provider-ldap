@@ -11,37 +11,33 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccLdapObject_Basic(t *testing.T) {
+func TestAccLDAPObject_Basic(t *testing.T) {
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckLdapObjectDestroy,
+		CheckDestroy: testAccCheckLDAPObjectDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckLdapObjectConfig,
+			{
+				Config: testAccCheckLDAPObjectConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckLdapObjectExists("ldap_object.foo"),
-					resource.TestCheckResourceAttr(
-						"ldap_object.foo", "dn", "uid=foo"),
-					resource.TestCheckResourceAttr(
-						"ldap_object.foo", "base_dn", "dc=example,dc=com"),
-					resource.TestCheckResourceAttr(
-						"ldap_object.foo", "object_classes.0", "inetOrgPerson"),
-					resource.TestCheckResourceAttr(
-						"ldap_object.foo", "object_classes.1", "posixAccount"),
-					testAccCheckLdapObjectAttributes("ldap_object.foo"),
+					testAccCheckLDAPObjectExists("ldap_object.jdoe"),
+					resource.TestCheckResourceAttr("ldap_object.jdoe", "dn", "uid=jdoe,dv=example,dc=com"),
+					//resource.TestCheckResourceAttr("ldap_object.jdoe", "base_dn", "dc=example,dc=com"),
+					resource.TestCheckResourceAttr("ldap_object.jdoe", "object_classes.0", "inetOrgPerson"),
+					resource.TestCheckResourceAttr("ldap_object.jdoe", "object_classes.1", "posixAccount"),
+					testAccCheckLDAPObjectAttributes("ldap_object.jdoe"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckLdapObjectDestroy(s *terraform.State) error {
+func testAccCheckLDAPObjectDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*ldap.Conn)
 	for _, r := range s.RootModule().Resources {
 		dn := r.Primary.Attributes["dn"]
-		baseDN := r.Primary.Attributes["base_dn"]
-		sr, err := helperSearchRequest(dn, baseDN, conn)
+		sr, err := helperSearchRequest(dn, conn)
 		if err != nil {
 			return err
 		}
@@ -53,13 +49,12 @@ func testAccCheckLdapObjectDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckLdapObjectExists(n string) resource.TestCheckFunc {
+func testAccCheckLDAPObjectExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		conn := testAccProvider.Meta().(*ldap.Conn)
 		for _, r := range s.RootModule().Resources {
 			dn := r.Primary.Attributes["dn"]
-			baseDn := r.Primary.Attributes["base_dn"]
-			sr, err := helperSearchRequest(dn, baseDn, conn)
+			sr, err := helperSearchRequest(dn, conn)
 			if err != nil {
 				return err
 			}
@@ -73,53 +68,61 @@ func testAccCheckLdapObjectExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckLdapObjectAttributes(n string) resource.TestCheckFunc {
+func testAccCheckLDAPObjectAttributes(n string) resource.TestCheckFunc {
 	//TODO: check sanity of the ldap object attributes
 	return func(s *terraform.State) error {
 		_, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Ldap Object not found: %s", n)
+			return fmt.Errorf("LDAP Object not found: %s", n)
 		}
 		return nil
 	}
 }
 
-const testAccCheckLdapObjectConfig = `
-resource "ldap_object" "foo" {
-  dn = "uid=foo,dc=example,dc=com"
-  object_classes = [
+func helperSearchRequest(dn string, conn *ldap.Conn) (*ldap.SearchResult, error) {
+
+	// search by primary key (that is, set the DN as base DN and use a "base
+	// object" scope); no attributes are retrieved since we are onòy checking
+	// for existence; all objects have an "objectClass" attribute, so the filter
+	// is a "match all"
+	request := ldap.NewSearchRequest(
+		dn,
+		ldap.ScopeBaseObject,
+		ldap.NeverDerefAliases,
+		0,
+		0,
+		false,
+		"(objectClass=*)",
+		[]string{"*"},
+		nil,
+	)
+
+	return conn.Search(request)
+}
+
+const testAccCheckLDAPObjectConfig = `
+resource "ldap_object" "jdoe" {
+  dn = "uid=jdoe,dc=example,dc=com"
+	
+  object_classes    = [
     "inetOrgPerson",
     "posixAccount",
   ]
 
-  attributes = [
-		{ sn = "10"
-  }
-  attribute {
-    name = "cn"
-    value = "foo"
-  }
-  attribute {
-    name = "uidNumber"
-    value = "1234"
-  }
-  attribute {
-    name = "gidNumber"
-    value = "1234"
-  }
-  attribute {
-    name = "homeDirectory"
-    value = "/home/foo"
-  }
-  attribute {
-    name = "loginShell"
-    value = "/bin/bash"
-  }
-
+  attributes        = [
+		{ sn            = "Doe"}, 		
+		{ givenName		  = "John"},
+		{ cn			      = "John Doe"},
+		{ displayName	  = "Mr. John K. Doe, esq."},
+		{ mail 			    = "john.doe@example.com" },
+		{ mail			    = "a123456@internal.example.com" },
+		{ mail			    = "jdoe@example.com" },
+		{ userPassword  = "password" },
+		{ description	  = "The best programmer in the world." },
+  	{ uidNumber     = "1234" },
+   	{ gidNumber     = "1234" },
+   	{ homeDirectory = "/home/jdoe"},
+   	{ loginShell    = "/bin/bash" }
+	]
 }
 `
-
-func helperSearchRequest(dn string, baseDn string, conn *ldap.Conn) (*ldap.SearchResult, error) {
-	searchRequest := ldap.NewSearchRequest(baseDn, ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false, fmt.Sprintf("(%s)", dn), []string{"*"}, nil)
-	return conn.Search(searchRequest)
-}
