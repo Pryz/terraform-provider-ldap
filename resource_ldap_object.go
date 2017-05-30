@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"strings"
 
+	"os"
+
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/schema"
 	"gopkg.in/ldap.v2"
@@ -61,7 +63,52 @@ func resourceLDAPObject() *schema.Resource {
 }
 
 func resourceLDAPObjectImport(d *schema.ResourceData, meta interface{}) (imported []*schema.ResourceData, err error) {
-	err = resourceLDAPObjectRead(d, meta)
+	d.Set("dn", d.Id())
+	err = readLDAPObjectImpl(d, meta, false)
+	if path := os.Getenv("TF_LDAP_IMPORTER_PATH"); path != "" {
+		log.Printf("[DEBUG] ldap_object::import - dumping imported object to %q", path)
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			// the export file does not exist
+			if file, err := os.Create(path); err == nil {
+				defer file.Close()
+				id := d.Id()
+				tokens := strings.Split(id, ",")
+				if len(tokens) > 0 {
+					tokens = strings.Split(tokens[0], "=")
+					if len(tokens) >= 1 {
+						id = tokens[1]
+						//resource "ldap_object" "a123456" {
+						file.WriteString(fmt.Sprintf("resource \"ldap_object\" %q {\n", id))
+						//	dn = "uid=a123456,dc=example,dc=com"
+						file.WriteString(fmt.Sprintf("  dn = %q\n", d.Id()))
+						//  object_classes = ["inetOrgPerson", "posixAccount"]
+						classes := []string{}
+						for _, class := range d.Get("object_classes").(*schema.Set).List() {
+							//classes[i] = fmt.Sprintf("\"%s\"", class)
+							classes = append(classes, fmt.Sprintf("%q", class))
+						}
+						file.WriteString(fmt.Sprintf("  object_classes = [ %s ]\n", strings.Join(classes, ", ")))
+						if attributes, ok := d.GetOk("attributes"); ok {
+							attributes := attributes.(*schema.Set).List()
+							if len(attributes) > 0 {
+								//  attributes = [
+								file.WriteString("  attributes = [\n")
+								for _, attribute := range attributes {
+									for name, value := range attribute.(map[string]interface{}) {
+										//    { sn = "Doe" },
+										file.WriteString(fmt.Sprintf("    { %s = %q },\n", name, value.(string)))
+									}
+								}
+								// ]
+								file.WriteString("  ]\n")
+							}
+						}
+						file.WriteString("}\n")
+					}
+				}
+			}
+		}
+	}
 	imported = append(imported, d)
 	return
 }
@@ -158,83 +205,7 @@ func resourceLDAPObjectCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceLDAPObjectRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ldap.Conn)
-	dn := d.Get("dn").(string)
-
-	log.Printf("[DEBUG] ldap_object::read - looking for object %q", dn)
-
-	// when searching by DN, you don't need t specify the base DN a search
-	// filter a "subtree" scope: just put the DN (i.e. the primary key) as the
-	// base DN with a "base object" scope, and the returned object will be the
-	// entry, if it exists
-	request := ldap.NewSearchRequest(
-		dn,
-		ldap.ScopeBaseObject,
-		ldap.NeverDerefAliases,
-		0,
-		0,
-		false,
-		"(objectclass=*)",
-		[]string{"*"},
-		nil,
-	)
-
-	sr, err := client.Search(request)
-	if err != nil {
-		if err, ok := err.(*ldap.Error); ok {
-			if err.ResultCode == 32 { // no such object
-				log.Printf("[WARN] ldap_object::read - object not found, removing %q from state because it no longer exists in LDAP", dn)
-				d.SetId("")
-				return nil
-			}
-		}
-		log.Printf("[DEBUG] ldap_object::read - lookup for %q returned an error %v", dn, err)
-		return err
-	}
-
-	log.Printf("[DEBUG] ldap_object::read - query for %q returned %v", dn, sr)
-
-	d.SetId(dn)
-	d.Set("object_classes", sr.Entries[0].GetAttributeValues("objectClass"))
-
-	// now deal with attributes
-	set := &schema.Set{
-		F: attributeHash,
-	}
-
-	for _, attribute := range sr.Entries[0].Attributes {
-		log.Printf("[DEBUG] ldap_object::read - treating attribute %q of %q (%d values: %v)", attribute.Name, dn, len(attribute.Values), attribute.Values)
-		if attribute.Name == "objectClass" {
-			// skip: we don't treat object classes as ordinary attributes
-			log.Printf("[DEBUG] ldap_object::read - skipping attribute %q of %q", attribute.Name, dn)
-			continue
-		}
-		if len(attribute.Values) == 1 {
-			// we don't treat the RDN as an ordinary attribute
-			a := fmt.Sprintf("%s=%s", attribute.Name, attribute.Values[0])
-			if strings.HasPrefix(dn, a) {
-				log.Printf("[DEBUG] ldap_object::read - skipping RDN %q of %q", a, dn)
-				continue
-			}
-		}
-		log.Printf("[DEBUG] ldap_object::read - adding attribute %q to %q (%d values)", attribute.Name, dn, len(attribute.Values))
-		// now add each value as an individual entry into the object, because
-		// we do not handle name => []values, and we have a set of maps each
-		// holding a single entry name => value; multiple maps may share the
-		// same key.
-		for _, value := range attribute.Values {
-			log.Printf("[DEBUG] ldap_object::read - for %q, setting %q => %q", dn, attribute.Name, value)
-			set.Add(map[string]interface{}{
-				attribute.Name: value,
-			})
-		}
-	}
-
-	if err := d.Set("attributes", set); err != nil {
-		log.Printf("[WARN] ldap_object::read - error setting LDAP attributes for %q : %v", dn, err)
-		return err
-	}
-	return nil
+	return readLDAPObjectImpl(d, meta, true)
 }
 
 func resourceLDAPObjectUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -306,6 +277,86 @@ func resourceLDAPObjectDelete(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	log.Printf("[DEBUG] ldap_object::delete - %q removed", dn)
+	return nil
+}
+
+func readLDAPObjectImpl(d *schema.ResourceData, meta interface{}, updateState bool) error {
+	client := meta.(*ldap.Conn)
+	dn := d.Get("dn").(string)
+
+	log.Printf("[DEBUG] ldap_object::read - looking for object %q", dn)
+
+	// when searching by DN, you don't need t specify the base DN a search
+	// filter a "subtree" scope: just put the DN (i.e. the primary key) as the
+	// base DN with a "base object" scope, and the returned object will be the
+	// entry, if it exists
+	request := ldap.NewSearchRequest(
+		dn,
+		ldap.ScopeBaseObject,
+		ldap.NeverDerefAliases,
+		0,
+		0,
+		false,
+		"(objectclass=*)",
+		[]string{"*"},
+		nil,
+	)
+
+	sr, err := client.Search(request)
+	if err != nil {
+		if err, ok := err.(*ldap.Error); ok {
+			if err.ResultCode == 32 && updateState { // no such object
+				log.Printf("[WARN] ldap_object::read - object not found, removing %q from state because it no longer exists in LDAP", dn)
+				d.SetId("")
+				return nil
+			}
+		}
+		log.Printf("[DEBUG] ldap_object::read - lookup for %q returned an error %v", dn, err)
+		return err
+	}
+
+	log.Printf("[DEBUG] ldap_object::read - query for %q returned %v", dn, sr)
+
+	d.SetId(dn)
+	d.Set("object_classes", sr.Entries[0].GetAttributeValues("objectClass"))
+
+	// now deal with attributes
+	set := &schema.Set{
+		F: attributeHash,
+	}
+
+	for _, attribute := range sr.Entries[0].Attributes {
+		log.Printf("[DEBUG] ldap_object::read - treating attribute %q of %q (%d values: %v)", attribute.Name, dn, len(attribute.Values), attribute.Values)
+		if attribute.Name == "objectClass" {
+			// skip: we don't treat object classes as ordinary attributes
+			log.Printf("[DEBUG] ldap_object::read - skipping attribute %q of %q", attribute.Name, dn)
+			continue
+		}
+		if len(attribute.Values) == 1 {
+			// we don't treat the RDN as an ordinary attribute
+			a := fmt.Sprintf("%s=%s", attribute.Name, attribute.Values[0])
+			if strings.HasPrefix(dn, a) {
+				log.Printf("[DEBUG] ldap_object::read - skipping RDN %q of %q", a, dn)
+				continue
+			}
+		}
+		log.Printf("[DEBUG] ldap_object::read - adding attribute %q to %q (%d values)", attribute.Name, dn, len(attribute.Values))
+		// now add each value as an individual entry into the object, because
+		// we do not handle name => []values, and we have a set of maps each
+		// holding a single entry name => value; multiple maps may share the
+		// same key.
+		for _, value := range attribute.Values {
+			log.Printf("[DEBUG] ldap_object::read - for %q, setting %q => %q", dn, attribute.Name, value)
+			set.Add(map[string]interface{}{
+				attribute.Name: value,
+			})
+		}
+	}
+
+	if err := d.Set("attributes", set); err != nil {
+		log.Printf("[WARN] ldap_object::read - error setting LDAP attributes for %q : %v", dn, err)
+		return err
+	}
 	return nil
 }
 
