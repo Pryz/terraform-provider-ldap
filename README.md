@@ -1,13 +1,13 @@
 # Terraform LDAP 
 
-[![CircleCI](https://circleci.com/gh/Pryz/terraform-provider-ldap.svg?style=svg)](https://circleci.com/gh/Pryz/terraform-provider-ldap)
+[![CircleCI](https://circleci.com/gh/dihedron/terraform-provider-ldap.svg?style=svg)](https://circleci.com/gh/dihedron/terraform-provider-ldap)
 
 ## Installation
 
 You can easily install the latest version with the following :
 
 ```
-go get -u github.com/Pryz/terraform-provider-ldap
+go get -u github.com/dihedron/terraform-provider-ldap
 ```
 
 Then add the plugin to your local `.terraformrc` :
@@ -64,12 +64,27 @@ The Bind User must have write access for resource creation to succeed.
 
 ## Features
 
-This provider is feature complete; it supports resource creation, reading, update 
-and deletion; it can be used to create nested resources at all levels of the
-hierarchy, provided the proper (implicit or explicit) dependencies are declared.
-When it comes to updating an object, the plugin will calculate the set of 
-attributes that need to be added, modified and removed and will surgically 
-operate on the remote object.
+This provider is feature complete.
+As of the latest release, it supports resource creation, reading, update, deletion
+and importing.
+It can be used to create nested resources at all levels of the hierarchy, 
+provided the proper (implicit or explicit) dependencies are declared.
+When updating an object, the plugin computes the minimum set of attributes that 
+need to be added, modified and removed and surgically operates on the remote 
+object to bring it up to date.
+When importing existing LDAP objects into the Terraform state, the plugin can
+automatically generate a .tf file with the relevant information, so that the 
+following ```terraform apply``` does not drop the imported resource out of the
+remote LDAP server due to it missing in the local ```.tf``` files.
+In order to have the plugin generate this file, put the name of the output file
+(which must *not* exist on disk) in the ```TF_LDAP_IMPORTER_PATH``` environment 
+variable, like this:
+```
+$> export TF_LDAP_IMPORTER_PATH=a123456.tf 
+$> terraform import ldap_object.a123456 uid=a123456,ou=users,dc=example,dc=com
+```
+and the plugin will create the ```a123456.tf``` file with the proper information.
+Then merge this file into your existing ```.tf``` file(s).
 
 ## Limitations
 
