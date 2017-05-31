@@ -1,13 +1,13 @@
 # Terraform LDAP 
 
-[![CircleCI](https://circleci.com/gh/dihedron/terraform-provider-ldap.svg?style=svg)](https://circleci.com/gh/dihedron/terraform-provider-ldap)
+[![CircleCI](https://circleci.com/gh/Pryz/terraform-provider-ldap.svg?style=svg)](https://circleci.com/gh/Pryz/terraform-provider-ldap)
 
 ## Installation
 
 You can easily install the latest version with the following :
 
 ```
-go get -u github.com/dihedron/terraform-provider-ldap
+go get -u github.com/Pryz/terraform-provider-ldap
 ```
 
 Then add the plugin to your local `.terraformrc` :
