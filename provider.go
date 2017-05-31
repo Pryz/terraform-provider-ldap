@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
+// Provider creates a new LDAP provider.
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
@@ -12,71 +13,55 @@ func Provider() terraform.ResourceProvider {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("LDAP_HOST", nil),
-				Description: descriptions["ldap_host"],
+				Description: "The LDAP server to connect to.",
 			},
 			"ldap_port": &schema.Schema{
 				Type:        schema.TypeInt,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("LDAP_PORT", 389),
-				Description: descriptions["ldap_port"],
+				Description: "The LDAP protocol port (default: 389).",
 			},
 			"use_tls": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("LDAP_USE_TLS", true),
-				Description: descriptions["ldap_port"],
+				Description: "Use TLS to secure the connection (default: true).",
 			},
 			"bind_user": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("LDAP_BIND_USER", nil),
-				Description: descriptions["bind_user"],
+				Description: "Bind user to be used for authenticating on the LDAP server.",
 			},
 			"bind_password": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("LDAP_BIND_PASSWORD", nil),
-				Description: descriptions["bind_password"],
+				Description: "Password to authenticate the Bind user.",
 			},
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"ldap_object": resourceLdapObject(),
+			"ldap_object": resourceLDAPObject(),
 		},
 
 		ConfigureFunc: configureProvider,
 	}
 }
 
-var descriptions map[string]string
-
-func init() {
-	descriptions = map[string]string{
-		"ldap_host": "The LDAP host to initiate the connection.",
-
-		"ldap_port": "The LDAP port to initiate the connection. Default: 389.",
-
-		"use_tls": "Use TLS to secure the connection. Default: true.",
-
-		"bind_user": "Bind user to be used for the LDAP request.",
-
-		"bind_password": "Password to authenticate the Bind user.",
-	}
-}
-
 func configureProvider(d *schema.ResourceData) (interface{}, error) {
 	config := Config{
-		LdapHost:     d.Get("ldap_host").(string),
-		LdapPort:     d.Get("ldap_port").(int),
+		LDAPHost:     d.Get("ldap_host").(string),
+		LDAPPort:     d.Get("ldap_port").(int),
 		UseTLS:       d.Get("use_tls").(bool),
 		BindUser:     d.Get("bind_user").(string),
 		BindPassword: d.Get("bind_password").(string),
 	}
 
-	conn, err := config.initiateAndBind()
+	connection, err := config.initiateAndBind()
 	if err != nil {
 		return nil, err
 	}
 
-	return conn, nil
+	return connection, nil
 }

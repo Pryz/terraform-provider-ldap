@@ -7,37 +7,38 @@ import (
 	"gopkg.in/ldap.v2"
 )
 
+// Config is the set of parameters needed to configure the LDAP provider.
 type Config struct {
-	LdapHost     string
-	LdapPort     int
+	LDAPHost     string
+	LDAPPort     int
 	UseTLS       bool
 	BindUser     string
 	BindPassword string
 }
 
 func (c *Config) initiateAndBind() (*ldap.Conn, error) {
-	//TODO: Should we handle UDP ?
-	conn, err := ldap.Dial("tcp", fmt.Sprintf("%s:%d", c.LdapHost, c.LdapPort))
+	// TODO: should we handle UDP ?
+	connection, err := ldap.Dial("tcp", fmt.Sprintf("%s:%d", c.LDAPHost, c.LDAPPort))
 	if err != nil {
 		return nil, err
 	}
 
-	// Handle TLS
+	// handle TLS
 	if c.UseTLS {
 		//TODO: Finish the TLS integration
-		err = conn.StartTLS(&tls.Config{InsecureSkipVerify: true})
+		err = connection.StartTLS(&tls.Config{InsecureSkipVerify: true})
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	// Bind to current connection
-	err = conn.Bind(c.BindUser, c.BindPassword)
+	// bind to current connection
+	err = connection.Bind(c.BindUser, c.BindPassword)
 	if err != nil {
-		conn.Close()
+		connection.Close()
 		return nil, err
 	}
 
-	// Return the LDAP connection
-	return conn, nil
+	// return the LDAP connection
+	return connection, nil
 }
