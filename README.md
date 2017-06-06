@@ -4,8 +4,8 @@
 
 ## Note
 
-This Terraform provider is a fork of [a previous implementation by Pryz]
-(https://github.com/Pryz/terraform-provider-ldap), which is still available.
+This Terraform provider is a fork of 
+[a previous implementation by Pryz](https://github.com/Pryz/terraform-provider-ldap), which is still available.
 The necessity of forking and continuing development on an independent repository
 rises from the need of implementing things at a much faster pace and being able 
 to commit and have changes available as soon as possible. The initial set of
