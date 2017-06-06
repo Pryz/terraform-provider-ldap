@@ -2,6 +2,17 @@
 
 [![CircleCI](https://circleci.com/gh/dihedron/terraform-provider-ldap.svg?style=svg)](https://circleci.com/gh/dihedron/terraform-provider-ldap)
 
+## Note
+
+This Terraform provider is a fork of [a previous implementation by Pryz]
+(https://github.com/Pryz/terraform-provider-ldap), which is still available.
+The necessity of forking and continuing development on an independent repository
+rises from the need of implementing things at a much faster pace and being able 
+to commit and have changes available as soon as possible. The initial set of
+changes - which included an almost complete rewrite of the provider - were 
+contributed back to the upstream repository, but most of new developments will
+will from now on happen here.
+
 ## Installation
 
 You can easily install the latest version with the following :
@@ -26,11 +37,13 @@ EOF
 provider "ldap" {
     ldap_host = "ldap.example.org"
     ldap_port = 389
-    use_tls = true
+    use_tls = false
     bind_user = "cn=admin,dc=example,dc=com"
     bind_password = "admin"
 }
 ```
+Note: if you want to use TLS, the LDAP port must be changed accordingly 
+(typically, port 636 is used for secure connections).
 
 ## Resource LDAP Object example
 
