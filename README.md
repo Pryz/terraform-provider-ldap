@@ -11,7 +11,7 @@ rises from the need of implementing things at a much faster pace and being able
 to commit and have changes available as soon as possible. The initial set of
 changes - which included an almost complete rewrite of the provider - were 
 contributed back to the upstream repository, but most of new developments will
-will from now on happen here.
+from now on happen here.
 
 ## Installation
 
