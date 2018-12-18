@@ -25,3 +25,6 @@ _testmain.go
 
 # main executable on linux
 terraform-provider-ldap
+
+# ignore the binary copied from docker build container
+bin/terraform-provider-ldap
