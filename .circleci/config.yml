@@ -24,7 +24,7 @@ jobs: # basic units of work in a run
       - run: go get -d -u github.com/hashicorp/terraform
       - run: go get -d -u gopkg.in/ldap.v2
 
-      - run: make # pull and build dependencies for the project
+      - run: go install # pull and build dependencies for the project
 
       - save_cache: # Store cache in the /go/pkg directory
           key: v1-pkg-cache
