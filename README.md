@@ -1,6 +1,6 @@
 # Terraform LDAP 
 
-[![CircleCI](https://circleci.com/gh/dihedron/terraform-provider-ldap/tree/feature%2Ftest-circleci-2.0.svg?style=svg)](https://circleci.com/gh/dihedron/terraform-provider-ldap/tree/feature%2Ftest-circleci-2.0)
+[![CircleCI](https://circleci.com/gh/dihedron/terraform-provider-ldap/tree/master.svg?style=svg)](https://circleci.com/gh/dihedron/terraform-provider-ldap/tree/master)
 
 ## Note
 
@@ -82,11 +82,13 @@ resource "ldap_object" "foo" {
 }
 ```
 
+Note that if you need to set more than one value for an attribute you need to specify it multiple times, due to a limitation in HCL 1.0 (see `mail` in the example).
+
 The Bind User must have write access for resource creation to succeed.
 
 ## Features
 
-This provider is feature complete.
+This provider is feature-complete.
 
 As of the latest release, it supports resource creation, reading, update, deletion and importing.
 
