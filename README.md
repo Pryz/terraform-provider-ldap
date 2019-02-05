@@ -1,6 +1,6 @@
 # Terraform LDAP 
 
-[![CircleCI](https://circleci.com/gh/dihedron/terraform-provider-ldap.svg?style=svg)](https://circleci.com/gh/dihedron/terraform-provider-ldap)
+[![CircleCI](https://circleci.com/gh/dihedron/terraform-provider-ldap/tree/feature%2Ftest-circleci-2.0.svg?style=svg)](https://circleci.com/gh/dihedron/terraform-provider-ldap/tree/feature%2Ftest-circleci-2.0)
 
 ## Note
 
