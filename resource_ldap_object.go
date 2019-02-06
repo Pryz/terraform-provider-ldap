@@ -11,7 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/schema"
-	"gopkg.in/ldap.v2"
+	ldap "gopkg.in/ldap.v2"
 )
 
 func resourceLDAPObject() *schema.Resource {
@@ -353,6 +353,16 @@ func readLDAPObjectImpl(d *schema.ResourceData, meta interface{}, updateState bo
 			log.Printf("[DEBUG] ldap_object::read - skipping attribute %q of %q", attribute.Name, dn)
 			continue
 		}
+		// FIXME: testing if this fixes issue #1.
+		if len(attribute.Values) == 1 {
+			// we don't treat the RDN as an ordinary attribute
+			a := fmt.Sprintf("%s=%s", attribute.Name, attribute.Values[0])
+			if strings.HasPrefix(dn, a) {
+				log.Printf("[DEBUG] ldap_object::read - skipping RDN %q of %q", a, dn)
+				continue
+			}
+		}
+
 		log.Printf("[DEBUG] ldap_object::read - adding attribute %q to %q (%d values)", attribute.Name, dn, len(attribute.Values))
 		// now add each value as an individual entry into the object, because
 		// we do not handle name => []values, and we have a set of maps each
