@@ -37,6 +37,14 @@ Terraform can "sideload" custom plugins; you only need to place the binary that 
 |Windows           |`%APPDATA%\terraform.d\plugins`  |
 |All other systems |`~/.terraform.d/plugins`         |
 
+and then run
+
+```bash
+$> terraform init
+```
+
+to make Terraform aware of the new plugin.
+
 You can find detailed instruction on [Hashicorp's website](https://www.terraform.io/docs/configuration/providers.html#third-party-plugins).
 
 

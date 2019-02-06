@@ -18,8 +18,8 @@ provider "ldap" {
  */ 
 resource "ldap_object" "users_example_com" {
 	dn 					= "ou=users,dc=example,dc=com"
-	object_classes 	    = [ "top", "organizationalUnit" ]
-# 	object_classes      = [ "organizationalUnit" ]
+	object_classes		= [ "top", "organizationalUnit" ]
+#	object_classes		= [ "organizationalUnit" ]
 }
 
 /*
@@ -30,21 +30,21 @@ resource "ldap_object" "users_example_com" {
  * new object's RDN to provide the new object's DN (DN=RDN,ParentDN).
  */
 resource "ldap_object" "a123456" {
-	dn                  = "uid=a123456,${ldap_object.users_example_com.dn}"		
-	object_classes      = ["inetOrgPerson", "posixAccount"]
-	attributes          = [		
-		{ sn            = "Doe"}, 		
+	dn					= "uid=a123456,${ldap_object.users_example_com.dn}"		
+	object_classes		= ["inetOrgPerson", "posixAccount"]
+	attributes			= [		
+		{ sn			= "Doe"}, 		
 		{ givenName		= "John"},
 		{ cn			= "John Doe"},
 		{ displayName	= "Mr. John K. Doe, esq."},
 		{ mail 			= "john.doe@example.com" },
-#		{ mail			= "a123456@internal.example.com" },
-		{ mail			= "jdoe@example.com" },
+		{ mail			= "a123456@internal.example.com" },
+#		{ mail			= "jdoe@example.com" },
 		{ userPassword  = "password" },
 #		{ description	= "The best programmer in the world." },
-    	{ uidNumber     = "1234" },
-    	{ gidNumber     = "1234" },
-    	{ homeDirectory = "/home/jdoe"},
-    	{ loginShell    = "/bin/bash" }
+		{ uidNumber		= "1234" },
+		{ gidNumber		= "1234" },
+		{ homeDirectory	= "/home/jdoe"},
+		{ loginShell	= "/bin/bash" }
 	]
 }

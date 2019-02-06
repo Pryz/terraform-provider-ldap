@@ -6,6 +6,8 @@
 # Folders
 _obj
 _test
+.terraform
+terraform.log
 
 # Architecture specific extensions/prefixes
 *.[568vq]
@@ -23,5 +25,10 @@ _testmain.go
 *.test
 *.prof
 
-# main executable on linux
+# Main executable on linux
 terraform-provider-ldap
+
+# Terraform specific files and folders
+.terraform
+terraform.log
+terraform.tfstate*
