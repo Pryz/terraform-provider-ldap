@@ -7,7 +7,7 @@
 This Terraform provider is a fork of [a previous implementation by Pryz](https://github.com/Pryz/terraform-provider-ldap), which is still available.
 This fork is actively maintained.
 
-*Last updated: 2019-02-05*
+*Last updated: 2019-02-06*
 
 ## How to build and install
 
@@ -82,7 +82,7 @@ resource "ldap_object" "foo" {
 }
 ```
 
-Note that if you need to set more than one value for an attribute you need to specify it multiple times, due to a limitation in HCL 1.0 (see `mail` in the example).
+Note that if you need to set more than one value for an attribute you need to specify it multiple times, due to a limitation in HCL 1.0 (see `mail` in the example); this will be fixed in the upcoming Terraform 0.12.0, which will include HCL 2.0 and will allow to define data types for nested collections. For details, see also [this issue](https://github.com/hashicorp/terraform/issues/19141).
 
 The Bind User must have write access for resource creation to succeed.
 
