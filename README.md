@@ -1,6 +1,11 @@
 # Terraform LDAP 
 
-[![CircleCI](https://circleci.com/gh/dihedron/terraform-provider-ldap/tree/master.svg?style=svg)](https://circleci.com/gh/dihedron/terraform-provider-ldap/tree/master)
+[![Build Status](https://circleci.com/gh/dihedron/terraform-provider-ldap/tree/master.svg?style=svg)](https://circleci.com/gh/dihedron/terraform-provider-ldap/tree/master)
+[![GitHub license](https://img.shields.io/github/license/dihedron/terraform-provider-ldap.svg)](https://github.com/dihedron/terraform-provider-ldap/blob/master/LICENSE)
+[![Sourcegraph](https://sourcegraph.com/github.com/dihedron/terraform-provider-ldap/-/badge.svg)](https://sourcegraph.com/github.com/dihedron/terraform-provider-ldap?badge)
+[![GoDoc](https://godoc.org/github.com/dihedron/terraform-provider-ldap?status.svg)](https://godoc.org/github.com/dihedron/terraform-provider-ldap)
+[![Go Report Card](https://goreportcard.com/badge/github.com/dihedron/terraform-provider-ldap)](https://goreportcard.com/report/github.com/dihedron/terraform-provider-ldap)
+[![GitHub issues](https://img.shields.io/github/issues/dihedron/terraform-provider-ldap.svg)](https://github.com/dihedron/terraform-provider-ldap/issues)
 
 ## Note
 
