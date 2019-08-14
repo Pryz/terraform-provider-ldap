@@ -298,7 +298,7 @@ func readLDAPObjectImpl(d *schema.ResourceData, meta interface{}, updateState bo
 		0,
 		false,
 		"(objectclass=*)",
-		[]string{"*"},
+		[]string{"objectClass", "groupType", "cn", "name", "sAMAccountName", "description", "info", "member"},
 		nil,
 	)
 
