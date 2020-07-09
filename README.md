@@ -1,5 +1,10 @@
 # Terraform LDAP 
 
+# ⚠️ Unmaintained ⚠️
+
+This repository is unmaintained, but left as a historical relic for any wishing to fork it.
+
+
 [![CircleCI](https://circleci.com/gh/Pryz/terraform-provider-ldap.svg?style=svg)](https://circleci.com/gh/Pryz/terraform-provider-ldap)
 
 ## Installation
