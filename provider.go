@@ -50,18 +50,11 @@ func Provider() terraform.ResourceProvider {
 }
 
 func configureProvider(d *schema.ResourceData) (interface{}, error) {
-	config := Config{
+	return &Config{
 		LDAPHost:     d.Get("ldap_host").(string),
 		LDAPPort:     d.Get("ldap_port").(int),
 		UseTLS:       d.Get("use_tls").(bool),
 		BindUser:     d.Get("bind_user").(string),
 		BindPassword: d.Get("bind_password").(string),
-	}
-
-	connection, err := config.initiateAndBind()
-	if err != nil {
-		return nil, err
-	}
-
-	return connection, nil
+	}, nil
 }

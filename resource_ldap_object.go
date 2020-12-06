@@ -114,7 +114,11 @@ func resourceLDAPObjectImport(d *schema.ResourceData, meta interface{}) (importe
 }
 
 func resourceLDAPObjectExists(d *schema.ResourceData, meta interface{}) (b bool, e error) {
-	conn := meta.(*ldap.Conn)
+	config := meta.(*Config)
+	conn, err := config.initiateAndBind()
+	if err != nil {
+		return false, err
+	}
 	dn := d.Get("dn").(string)
 
 	log.Printf("[DEBUG] ldap_object::exists - checking if %q exists", dn)
@@ -135,7 +139,8 @@ func resourceLDAPObjectExists(d *schema.ResourceData, meta interface{}) (b bool,
 		nil,
 	)
 
-	_, err := conn.Search(request)
+	var _ *ldap.SearchResult
+	_, err = conn.Search(request)
 	if err != nil {
 		if err, ok := err.(*ldap.Error); ok {
 			if err.ResultCode == 32 { // no such object
@@ -152,7 +157,11 @@ func resourceLDAPObjectExists(d *schema.ResourceData, meta interface{}) (b bool,
 }
 
 func resourceLDAPObjectCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ldap.Conn)
+	config := meta.(*Config)
+	client, err := config.initiateAndBind()
+	if err != nil {
+		return err
+	}
 	dn := d.Get("dn").(string)
 
 	log.Printf("[DEBUG] ldap_object::create - creating a new object under %q", dn)
@@ -193,7 +202,7 @@ func resourceLDAPObjectCreate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	err := client.Add(request)
+	err = client.Add(request)
 	if err != nil {
 		return err
 	}
@@ -209,7 +218,11 @@ func resourceLDAPObjectRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceLDAPObjectUpdate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ldap.Conn)
+	config := meta.(*Config)
+	client, err := config.initiateAndBind()
+	if err != nil {
+		return err
+	}
 
 	log.Printf("[DEBUG] ldap_object::update - performing update on %q", d.Id())
 
@@ -255,7 +268,7 @@ func resourceLDAPObjectUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	err := client.Modify(request)
+	err = client.Modify(request)
 	if err != nil {
 		log.Printf("[ERROR] ldap_object::update - error modifying LDAP object %q with values %v", d.Id(), err)
 		return err
@@ -264,14 +277,18 @@ func resourceLDAPObjectUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceLDAPObjectDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ldap.Conn)
+	config := meta.(*Config)
+	client, err := config.initiateAndBind()
+	if err != nil {
+		return err
+	}
 	dn := d.Get("dn").(string)
 
 	log.Printf("[DEBUG] ldap_object::delete - removing %q", dn)
 
 	request := ldap.NewDelRequest(dn, nil)
 
-	err := client.Del(request)
+	err = client.Del(request)
 	if err != nil {
 		log.Printf("[ERROR] ldap_object::delete - error removing %q: %v", dn, err)
 		return err
@@ -281,7 +298,11 @@ func resourceLDAPObjectDelete(d *schema.ResourceData, meta interface{}) error {
 }
 
 func readLDAPObjectImpl(d *schema.ResourceData, meta interface{}, updateState bool) error {
-	client := meta.(*ldap.Conn)
+	config := meta.(*Config)
+	client, err := config.initiateAndBind()
+	if err != nil {
+		return err
+	}
 	dn := d.Get("dn").(string)
 
 	log.Printf("[DEBUG] ldap_object::read - looking for object %q", dn)
